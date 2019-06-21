@@ -420,7 +420,7 @@ void pauseThread() // obligation d'initialiser un autre thread 'pauser' le threa
 
 int main(int argc, char* argv[])
 {
-    set_paused(false);
+    m_pause = false;
     //creation des threads
     boost::thread allum(&gestionAllumage);
     boost::thread p1(&pauseThread);
