@@ -57,6 +57,8 @@ using namespace rapidjson;
     CURLcode res;
     std::string readBuffer;
     
+    aquasql connectBdd("localhost","root","enzolepd","aquatech");
+    
 void block_while_paused() // permet de bloquer le programme pendant que m_pause est vrai
 {
     boost::unique_lock<boost::mutex> lock(m_pause_mutex); // initialise une variable lick en tant que mutex
@@ -115,7 +117,7 @@ void getData()
         curl = curl_easy_init();
         if(curl)
         {
-            curl_easy_setopt(curl, CURLOPT_URL, "192.168.0.104/site_aquatech/settings.json");
+            curl_easy_setopt(curl, CURLOPT_URL, "127.0.0.1/settings.json");
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
             res = curl_easy_perform(curl);
@@ -296,6 +298,7 @@ void gestionAllumage()
             {
                 // envoie de la trame de demarage electrovanne 1
                 startTrame("ev1", "110000000",surface1, ev1);
+                connectBdd.request("UPDATE trame SET value = '110000000' WHERE id=1;");
                 bz = 1;
             }
         }
@@ -312,6 +315,7 @@ void gestionAllumage()
                 // envoie de la trame de demarage electrovanne 2
                 cout << "ok" << endl;
                 startTrame("ev2", "001100000",surface2, ev2);
+                connectBdd.request("UPDATE trame SET value = '001100000' WHERE id=1;");
                 bz = 1;
             }
         }
@@ -328,6 +332,7 @@ void gestionAllumage()
             {
                 // envoie de la trame de demarage electrovanne 3
                 startTrame("ev3", "000011000",surface3, ev3);
+                connectBdd.request("UPDATE trame SET value = '000011000' WHERE id=1;");
                 bz = 1;
             }
         }
@@ -342,6 +347,7 @@ void gestionAllumage()
             {
                 // envoie de la trame de demarage electrovanne 4
                 startTrame("ev4", "000000110",surface4, ev4);
+                connectBdd.request("UPDATE trame SET value = '000000110' WHERE id=1;");
                 bz = 1;
                 boost::this_thread::sleep_for(boost::chrono::hours(1));
             }
@@ -420,30 +426,24 @@ int main(int argc, char* argv[])
     boost::thread p1(&pauseThread);
 
     //connexion a la base de donnees et met la valeur du nombre de litres d'eau qui ont ete utilise cette journee
-    aquasql connectBdd("localhost","root","enzolepd","aquatech");
-    connectBdd.request("DROP TABLE IF EXISTS debit;");
-    connectBdd.request("CREATE TABLE IF NOT EXISTS debit ( id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, debit_au INT NOT NULL );");
-    connectBdd.prep_request("INSERT INTO debit VALUES (NULL, ?);",12);
+    //connectBdd.request("DROP TABLE IF EXISTS debit;");
+    //connectBdd.prep_request("INSERT INTO debit VALUES (NULL, ?);",12);
     
     //initialise le capteur du debit d'eau
     wiringPiSetupPhys();
     pinMode(12,INPUT);
     wiringPiISR(12,INT_EDGE_RISING, increment);
     
+    //met les electrovannes dans leur etat par defaut
+    aquaclientsocket initSocket("init",3256);
+    initSocket.send("000000000");
+    connectBdd.request("UPDATE trame SET value = '000000000' WHERE id=1;");
+    
+    //recupere les donnees
+    getData();
     
     //ajoute les threads
     p1.join();
     allum.join();
-    
-    for(;;)
-    {
-        //met les electrovannes dans leur etat par defaut
-        aquaclientsocket initSocket("init",3256);
-        initSocket.send("000000000");
-    
-        //recupere les donnees
-        getData();
-    }
-
 
 }
