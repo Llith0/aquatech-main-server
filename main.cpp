@@ -364,9 +364,7 @@ void pauseThread() // obligation d'initialiser un autre thread 'pauser' le threa
     unsigned len;
     std::string sBuffer;
     
-    for(;;)
-    {
-        std::cout << "Creation du server '" << "arret" << "' sur le port " << 3258 << std::endl;
+    std::cout << "Creation du server '" << "arret" << "' sur le port " << 3258 << std::endl;
 	// Creation du socket 
     if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
         //gestion des erreurs
@@ -414,7 +412,6 @@ void pauseThread() // obligation d'initialiser un autre thread 'pauser' le threa
             set_paused(false);
         }
     }
-}
 }
 
 
