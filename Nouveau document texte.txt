@@ -1,0 +1,60 @@
+#!/bin/bash
+
+args=("$@")
+
+echo $(args[0]);
+
+passwd pi << EOF
+raspberry
+newpass
+newpass
+EOF
+
+sudo bash -c "printf 'country=FR\n' >> /etc/wpa_supplicant/wpa_supplicant.conf"
+
+sudo bash -c "wpa_passphrase "variablessid" "variablemdp" >> /etc/wpa_supplicant/wpa_supplicant.conf"
+
+wpa_cli -i wlan0 reconfigure
+
+sudo bash -c " printf \"fr_FR ISO-8859-1\nfr_FR.UTF-8 UTF-8 \" >> /etc/locale.gen "
+
+service networking resart << EOF
+newpass
+EOF
+
+sudo printf "interface wlan0\nstatic ip_address=variableip+mask\nstatic routers=router\nstatic domain_name_servers=8.8.8.8 8.8.4.4" >> /etc/dhcpcd.conf
+
+service networking resart << EOF
+newpass
+EOF
+
+sudo apt-get upgrade
+sudo apt-get update
+sudo apt install apache
+
+sudo apt-install apache2 php libapache2-mod-php mariadb-server php-mysql libboost-all-dev libcurl4-openssl-dev libmysqlcppconn-dev rapidjson-dev wiringpi git-core python3-pip
+
+pip3 install requests beautifulsoup4 mysql-connector-python
+
+sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON *.* TO 'aquatech'@'localhost' IDENTIFIED BY 'Aquatech123'; CREATE DATABASE AQUATECH;"
+
+mkdir /home/pi/aquatech
+
+git clone https://github.com/Llith0/rip_main_server.git /home/pi/aquatech
+
+g++ -o /home/pi/aquatech/main-server/thread /home/pi/aquatech/main-server/*.cpp -lboost_system -lboost_threadc-lboost_chrono -lpthread -lwiringPi -lmysqlcppconn -lcurl
+
+mysql -u root -pAquatech123 aquatech < /home/pi/aquatech
+
+sudo rm -r /var/www/html
+
+sudo cp -r /home/pi/aquatech/web/* /var/www/html
+
+sudo chmod 777 /home/pi/aquatech/web/evapotranspiration.csv
+sudo chmod 777 /home/pi/aquatech/web/pluviometrie.csv
+sudo chmod 777 /home/pi/aquatech/web/settings.json
+
+crontab -l > mycron
+sudo printf '00 20 * * * sudo bash -c "cd /home/pi/aquatech/main-server/ && ./thread"\n00 12 * * * python3 /home/pi/aquatech/meteo/test.py\n' > mycron
+crontab mycron
+rm -r mycron
