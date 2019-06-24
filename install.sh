@@ -12,7 +12,7 @@ EOF
 
 sudo bash -c "printf 'country=FR\n' >> /etc/wpa_supplicant/wpa_supplicant.conf"
 
-sudo bash -c "wpa_passphrase \"HUAWEI-B528-B77E\" \"QEHQGD41L4E\" >> /etc/wpa_supplicant/wpa_supplicant.conf"
+sudo bash -c "wpa_passphrase \"BTS_SN\" \"FafaLoloDidiJaja09123166\" >> /etc/wpa_supplicant/wpa_supplicant.conf"
 
 wpa_cli -i wlan0 reconfigure
 
@@ -22,7 +22,7 @@ service networking restart << EOF
 Aquatech123
 EOF
 
-sudo printf "interface wlan0\nstatic ip_address=192.168.1.195/24\nstatic routers=192.168.1.1\nstatic domain_name_servers=8.8.8.8 8.8.4.4" >> /etc/dhcpcd.conf
+sudo printf "interface wlan0\nstatic ip_address=192.168.2.195/24\nstatic routers=192.168.2.1\nstatic domain_name_servers=8.8.8.8 8.8.4.4" >> /etc/dhcpcd.conf
 
 service networking restart << EOF
 Aquatech123
